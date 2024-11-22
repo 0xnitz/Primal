@@ -2,7 +2,8 @@
     * read
     * write
 * protections for UM
-    * handles
+    * remove from task manager/system informer
     * read
     * write
     * Defender shit
+* refactor
