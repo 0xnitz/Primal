@@ -88,9 +88,9 @@
     <ClCompile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
-	  <Link>
-		  <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-	  </Link>
+    <Link>
+      <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <DriverSign>
@@ -99,9 +99,9 @@
     <ClCompile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
-	  <Link>
-		  <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-	  </Link>
+    <Link>
+      <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
     <DriverSign>
@@ -110,9 +110,9 @@
     <ClCompile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
-	  <Link>
-		  <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-	  </Link>
+    <Link>
+      <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">
     <DriverSign>
@@ -121,9 +121,9 @@
     <ClCompile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
     </ClCompile>
-	  <Link>
-		  <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
-	  </Link>
+    <Link>
+      <AdditionalOptions>/integritycheck %(AdditionalOptions)</AdditionalOptions>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
     <Inf Include="Primal.inf" />
@@ -132,6 +132,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="DetachEprocess.cpp" />
     <ClCompile Include="FunctionResolver.cpp" />
     <ClCompile Include="HandleProtection.cpp" />
     <ClCompile Include="KernelUtils.cpp" />
@@ -139,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DefinesMacros.hpp" />
+    <ClInclude Include="DetachEprocess.hpp" />
     <ClInclude Include="FunctionResolver.hpp" />
     <ClInclude Include="HandleProtection.hpp" />
     <ClInclude Include="KernelUtils.hpp" />

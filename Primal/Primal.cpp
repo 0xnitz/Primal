@@ -1,8 +1,10 @@
 #include "Primal.hpp"
+#include "DetachEprocess.hpp"
 #include "FunctionResolver.hpp"
 #include "HandleProtection.hpp"
 
 HANDLE ARCANE_PID = reinterpret_cast<HANDLE>(-1);
+PEPROCESS ARCANE_PROCESS = nullptr;
 PSGETNEXTPROCESS PsGetNextProcess = nullptr;
 PSGETPROCESSIMAGEFILENAME PsGetProcessImageFileName = nullptr;
 
@@ -67,6 +69,8 @@ extern "C" NTSTATUS DriverEntry(
 		return register_result;
 	}
 
+	DetachEprocess::remove_from_process_links(ARCANE_PROCESS);
+
 	DEBUG_PRINT("Driver loaded successfully!\n");
 
 	return STATUS_SUCCESS;
@@ -125,6 +129,7 @@ void find_arcane_pid()
 
 		if (image_file_name && _stricmp(image_file_name, ARCANE_PROCESS_NAME) == 0) {
 			ARCANE_PID = PsGetProcessId(process);
+			ARCANE_PROCESS = process;
 
 			return;
 		}
