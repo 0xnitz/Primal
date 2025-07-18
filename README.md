@@ -1,5 +1,4 @@
 * ioctls
-    * read
     * write
 * protections for KM
 	* UEFI runtime driver launched from UEFIShell? (something close to efiguard)
