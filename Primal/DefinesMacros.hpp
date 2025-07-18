@@ -15,6 +15,12 @@
 
 #define ARCANE_PROCESS_NAME "Arcane.exe"
 
+#define COMPLETE_REQUEST(irp, status) \
+    irp->IoStatus.Status = status; \
+    IoCompleteRequest(irp, IO_NO_INCREMENT); \
+    \
+    return status;
+
 typedef PEPROCESS(*PSGETNEXTPROCESS)(PEPROCESS);
 typedef const char* (*PSGETPROCESSIMAGEFILENAME)(PEPROCESS);
 
@@ -41,3 +47,5 @@ typedef struct _LDR_DATA_TABLE_ENTRY {
     ULONG OriginalBase;
     LARGE_INTEGER LoadTime;
 } LDR_DATA_TABLE_ENTRY, * PLDR_DATA_TABLE_ENTRY;
+
+using Address64 = UINT64;
