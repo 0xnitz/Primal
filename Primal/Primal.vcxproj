@@ -136,6 +136,7 @@
     <ClCompile Include="FunctionResolver.cpp" />
     <ClCompile Include="HandleProtection.cpp" />
     <ClCompile Include="KernelUtils.cpp" />
+    <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Primal.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +145,7 @@
     <ClInclude Include="FunctionResolver.hpp" />
     <ClInclude Include="HandleProtection.hpp" />
     <ClInclude Include="KernelUtils.hpp" />
+    <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Primal.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

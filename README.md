@@ -1,7 +1,5 @@
 * ioctls
-    * read
     * write
-* refactor
 * protections for KM
 	* UEFI runtime driver launched from UEFIShell? (something close to efiguard)
 	* protect from MmCopyVirtualMemory and it's buddies

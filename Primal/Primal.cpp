@@ -59,6 +59,7 @@ extern "C" NTSTATUS DriverEntry(
 	DriverObject->MajorFunction[IRP_MJ_CREATE] = primal_create_close;
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = primal_create_close;
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = primal_control;
+	DriverObject->MajorFunction[IRP_MJ_READ] = Memory::primal_read;
 	DriverObject->DriverUnload = primal_unload;
 
 	NTSTATUS register_result = HandleProtection::register_callback();
@@ -121,7 +122,6 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 
 void find_arcane_pid()
 {
-	// TODO: somehow all pids are find besides ARCANE
 	PEPROCESS process = PsInitialSystemProcess;
 
 	do {
