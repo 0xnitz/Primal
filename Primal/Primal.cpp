@@ -60,6 +60,7 @@ extern "C" NTSTATUS DriverEntry(
 	DriverObject->MajorFunction[IRP_MJ_CLOSE] = primal_create_close;
 	DriverObject->MajorFunction[IRP_MJ_DEVICE_CONTROL] = primal_control;
 	DriverObject->MajorFunction[IRP_MJ_READ] = Memory::primal_read;
+	DriverObject->MajorFunction[IRP_MJ_WRITE] = Memory::primal_write;
 	DriverObject->DriverUnload = primal_unload;
 
 	NTSTATUS register_result = HandleProtection::register_callback();
