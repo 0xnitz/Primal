@@ -2,6 +2,7 @@
 #include "DetachEprocess.hpp"
 #include "FunctionResolver.hpp"
 #include "HandleProtection.hpp"
+#include "UnlinkLoadedModule.hpp"
 
 HANDLE ARCANE_PID = reinterpret_cast<HANDLE>(-1);
 PEPROCESS ARCANE_PROCESS = nullptr;
@@ -75,6 +76,8 @@ extern "C" NTSTATUS DriverEntry(
 	}
 
 	DetachEprocess::remove_from_process_links(ARCANE_PROCESS);
+	UnlinkLoadedModule::remove_from_loaded_modules(PsLoadedModuleList,
+		reinterpret_cast<Address64>(DriverObject->DriverStart));
 
 	DEBUG_PRINT("Driver loaded successfully!\n");
 
