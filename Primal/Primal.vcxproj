@@ -138,6 +138,7 @@
     <ClCompile Include="KernelUtils.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Primal.cpp" />
+    <ClCompile Include="UnlinkLoadedModule.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DefinesMacros.hpp" />
@@ -147,6 +148,7 @@
     <ClInclude Include="KernelUtils.hpp" />
     <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Primal.hpp" />
+    <ClInclude Include="UnlinkLoadedModule.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
