@@ -15,11 +15,27 @@
 
 #define ARCANE_PROCESS_NAME "Arcane.exe"
 
+#define LOCK() \
+    KIRQL old_irql; \
+    KeAcquireSpinLock(&PRIMAL_LOCK, &old_irql);
+
+#define UNLOCK() \
+    KeReleaseSpinLock(&PRIMAL_LOCK, old_irql);
+
 #define COMPLETE_REQUEST(irp, status) \
     irp->IoStatus.Status = status; \
     IoCompleteRequest(irp, IO_NO_INCREMENT); \
     \
     return status;
+
+#define COMPLETE_REQUEST_UNLOCK(irp, status) \
+    irp->IoStatus.Status = status; \
+    IoCompleteRequest(irp, IO_NO_INCREMENT); \
+    UNLOCK(); \
+    \
+    return status;
+
+extern KSPIN_LOCK PRIMAL_LOCK;
 
 typedef PEPROCESS(*PSGETNEXTPROCESS)(PEPROCESS);
 typedef const char* (*PSGETPROCESSIMAGEFILENAME)(PEPROCESS);
