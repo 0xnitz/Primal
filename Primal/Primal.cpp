@@ -7,6 +7,7 @@ HANDLE ARCANE_PID = reinterpret_cast<HANDLE>(-1);
 PEPROCESS ARCANE_PROCESS = nullptr;
 PSGETNEXTPROCESS PsGetNextProcess = nullptr;
 PSGETPROCESSIMAGEFILENAME PsGetProcessImageFileName = nullptr;
+KSPIN_LOCK PRIMAL_LOCK;
 
 extern "C" NTSTATUS DriverEntry(
 	_In_ PDRIVER_OBJECT     DriverObject,
@@ -45,6 +46,8 @@ extern "C" NTSTATUS DriverEntry(
 
 		return status;
 	}
+
+	KeInitializeSpinLock(&PRIMAL_LOCK);
 
 	status = FunctionResolver::resolve_ps_functions(DriverObject);
 	if (!NT_SUCCESS(status))
