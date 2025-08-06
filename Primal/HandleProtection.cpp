@@ -21,7 +21,8 @@ _Use_decl_annotations_ OB_PREOP_CALLBACK_STATUS OpenProcessHook(
 			if (PreInfo->Operation == OB_OPERATION_HANDLE_CREATE ||
 				PreInfo->Operation == OB_OPERATION_HANDLE_DUPLICATE)
 			{
-				DEBUG_PRINT("Handle Block from %d\n", PsGetCurrentProcessId());
+				DEBUG_PRINT_OBFUSCATE("Handle Block from ");
+				DEBUG_PRINT("%d\n", PsGetCurrentProcessId());
 
 				PreInfo->Parameters->CreateHandleInformation.DesiredAccess = 0;
 				PreInfo->Parameters->CreateHandleInformation.OriginalDesiredAccess = 0;
@@ -48,12 +49,13 @@ NTSTATUS HandleProtection::register_callback()
 
 	NTSTATUS out_status = ObRegisterCallbacks(&callback, reinterpret_cast<PVOID*>(&CALLBACK_REGISTRATION));
 	if (!NT_SUCCESS(out_status)) {
-		DEBUG_PRINT("Failed to register Ob callback: 0x%X!\n", out_status);
+		DEBUG_PRINT_OBFUSCATE("Failed to register Ob callback: ");
+		DEBUG_PRINT("0x%X!\n", out_status);
 
 		return out_status;
 	}
 
-	DEBUG_PRINT("Ob callback registered\n");
+	DEBUG_PRINT_OBFUSCATE("Ob callback registered\n");
 
 	return out_status;
 }
@@ -66,5 +68,5 @@ void HandleProtection::unregister_callback()
 		CALLBACK_REGISTRATION = nullptr;
 	}
 
-	DEBUG_PRINT("Ob callback unregistered\n");
+	DEBUG_PRINT_OBFUSCATE("Ob callback unregistered\n");
 }
