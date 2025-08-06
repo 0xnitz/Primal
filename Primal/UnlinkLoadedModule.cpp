@@ -17,7 +17,7 @@ void remove_from_loaded_modules(LIST_ENTRY loaded_modules, Address64 base_addres
 			current->Flink = current;
 			current->Blink = current;
 
-			DEBUG_PRINT("Detached Primal from PsLoadedModuleList!");
+			DEBUG_PRINT_OBFUSCATE("Detached Primal from PsLoadedModuleList!");
 
 			return;
 		}

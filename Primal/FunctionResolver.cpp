@@ -12,6 +12,8 @@ CONST UCHAR PsGetNextProcessSignature[] =
 	0x00 ,0x48 ,0x8b ,0xe9 ,0x33 ,0xf6
 };
 
+// TODO: dynamically resolve constant strings here better
+
 NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
 {
     UNICODE_STRING function_name;
@@ -24,7 +26,7 @@ NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
         ntoskrnl_ldr->DllBase,
         ntoskrnl_ldr->SizeOfImage));
     if (!PsGetNextProcess) {
-        DEBUG_PRINT("Failed to resolve PsGetNextProcess\n");
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve PsGetNextProcess\n");
 
         return STATUS_PROCEDURE_NOT_FOUND;
     }
@@ -32,7 +34,7 @@ NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
     RtlInitUnicodeString(&function_name, L"PsGetProcessImageFileName");
     PsGetProcessImageFileName = static_cast<PSGETPROCESSIMAGEFILENAME>(MmGetSystemRoutineAddress(&function_name));
     if (!PsGetProcessImageFileName) {
-        DEBUG_PRINT("Failed to resolve PsGetProcessImageFileName\n");
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve PsGetProcessImageFileName\n");
 
         return STATUS_PROCEDURE_NOT_FOUND;
     }

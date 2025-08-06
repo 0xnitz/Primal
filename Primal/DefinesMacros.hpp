@@ -2,16 +2,11 @@
 
 #include <ntddk.h>
 
+#include "Obfuscation.hpp"
+
 #define NO_DISCARD [[nodiscard]]
 
 #define UNUSED(var) [[maybe_unused]] var
-
-#ifdef NDEBUG
-#define DEBUG_PRINT(format, ...)
-#else
-#define DEBUG_PRINT(format, ...) \
-    DbgPrint("[Primal] " format, __VA_ARGS__)
-#endif
 
 #define ARCANE_PROCESS_NAME "Arcane.exe"
 
@@ -34,6 +29,29 @@
     UNLOCK(); \
     \
     return status;
+
+#define OBFUSCATE(plaintext) ([]() { \
+    constinit static auto s = ObfuscatedStringA<sizeof(plaintext)>(plaintext); \
+    \
+    return s.decrypt(); \
+})()
+
+#define WOBFUSCATE(plaintext) ([]() { \
+    constinit static auto s = ObfuscatedStringW<sizeof(plaintext)>(plaintext); \
+    \
+    return s.decrypt(); \
+})()
+
+#ifdef NDEBUG
+#define DEBUG_PRINT(format, ...)
+#else
+// Two macros to support printing DEBUG_PRINT(OBFUSCATE(...)) and variadic
+#define DEBUG_PRINT(format, ...) \
+    DbgPrint("[Primal] " format, __VA_ARGS__)
+
+#define DEBUG_PRINT_OBFUSCATE(str) \
+    DbgPrint("%s %s", OBFUSCATE("[Primal]"), OBFUSCATE(str));
+#endif
 
 extern KSPIN_LOCK PRIMAL_LOCK;
 

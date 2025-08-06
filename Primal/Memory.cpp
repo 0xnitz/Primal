@@ -11,7 +11,7 @@ NO_DISCARD NTSTATUS primal_read(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	PHYSICAL_ADDRESS physical_address = irp_stack_location->Parameters.Read.ByteOffset;
 
 	if (size == 0 || size > PAGE_SIZE) {
-		DEBUG_PRINT("Bad read params!\n");
+		DEBUG_PRINT_OBFUSCATE("Bad read params!\n");
 
 		COMPLETE_REQUEST(Irp, STATUS_INVALID_PARAMETER)
 	}
@@ -20,14 +20,14 @@ NO_DISCARD NTSTATUS primal_read(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 
 	PVOID mapped_page = MmMapIoSpace(physical_address, size, MmNonCached);
 	if (!mapped_page) {
-		DEBUG_PRINT("Error MmMapIoSpace!\n");
+		DEBUG_PRINT_OBFUSCATE("Error MmMapIoSpace!\n");
 
 		COMPLETE_REQUEST_UNLOCK(Irp, STATUS_INSUFFICIENT_RESOURCES)
 	}
 
 	PVOID user_buffer = Irp->UserBuffer;
 	if (!user_buffer) {
-		DEBUG_PRINT("Bad UM read params!\n");
+		DEBUG_PRINT_OBFUSCATE("Bad UM read params!\n");
 
 		MmUnmapIoSpace(mapped_page, size);
 
@@ -38,7 +38,8 @@ NO_DISCARD NTSTATUS primal_read(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	Irp->IoStatus.Information = size;
 	MmUnmapIoSpace(mapped_page, size);
 
-	DEBUG_PRINT("Mapping address (0x%08X) to UM (0x%08X)", physical_address, user_buffer);
+	DEBUG_PRINT_OBFUSCATE("Mapping address ");
+	DEBUG_PRINT("(0x%08X) to (0x%08X)", physical_address, user_buffer);
 
 	COMPLETE_REQUEST_UNLOCK(Irp, STATUS_SUCCESS)
 }
@@ -50,7 +51,7 @@ NO_DISCARD NTSTATUS primal_write(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	PHYSICAL_ADDRESS physical_address = irp_stack_location->Parameters.Read.ByteOffset;
 
 	if (size == 0 || size > PAGE_SIZE) {
-		DEBUG_PRINT("Bad write params!\n");
+		DEBUG_PRINT_OBFUSCATE("Bad write params!\n");
 
 		COMPLETE_REQUEST(Irp, STATUS_INVALID_PARAMETER)
 	}
@@ -59,14 +60,14 @@ NO_DISCARD NTSTATUS primal_write(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 
 	PVOID mapped_page = MmMapIoSpace(physical_address, size, MmNonCached);
 	if (!mapped_page) {
-		DEBUG_PRINT("Error MmMapIoSpace!\n");
+		DEBUG_PRINT_OBFUSCATE("Error MmMapIoSpace!\n");
 
 		COMPLETE_REQUEST_UNLOCK(Irp, STATUS_INSUFFICIENT_RESOURCES)
 	}
 
 	PVOID user_buffer = Irp->UserBuffer;
 	if (!user_buffer) {
-		DEBUG_PRINT("Bad UM write buffer!\n");
+		DEBUG_PRINT_OBFUSCATE("Bad UM write buffer!\n");
 
 		MmUnmapIoSpace(mapped_page, size);
 
@@ -77,7 +78,8 @@ NO_DISCARD NTSTATUS primal_write(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	Irp->IoStatus.Information = size;
 	MmUnmapIoSpace(mapped_page, size);
 
-	DEBUG_PRINT("Writing user data to (0x%08X)", physical_address);
+	DEBUG_PRINT_OBFUSCATE("Writing user data to ");
+	DEBUG_PRINT("(0x%08X)", physical_address);
 
 	COMPLETE_REQUEST_UNLOCK(Irp, STATUS_SUCCESS)
 }

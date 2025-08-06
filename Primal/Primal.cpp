@@ -17,8 +17,9 @@ extern "C" NTSTATUS DriverEntry(
 {
 	UNREFERENCED_PARAMETER(RegistryPath);
 	
-	DEBUG_PRINT("In DriverEntry\n");
+	DEBUG_PRINT_OBFUSCATE("In DriverEntry\n");
 
+	// TODO: obfuscate these in a nice way
 	UNICODE_STRING device_name = RTL_CONSTANT_STRING(L"\\Device\\Primal");
 	UNICODE_STRING symbolic_link = RTL_CONSTANT_STRING(L"\\DosDevices\\Primal");
 	PDEVICE_OBJECT device_object = nullptr;
@@ -34,7 +35,8 @@ extern "C" NTSTATUS DriverEntry(
 
 	if (!NT_SUCCESS(status)) 
 	{
-		DEBUG_PRINT("Failed to create device (0x%08X)\n", status);
+		DEBUG_PRINT_OBFUSCATE("Failed to create device ");
+		DEBUG_PRINT("(0x%08X)\n", status);
 
 		return status;
 	}
@@ -42,7 +44,8 @@ extern "C" NTSTATUS DriverEntry(
 	status = IoCreateSymbolicLink(&symbolic_link, &device_name);
 	if (!NT_SUCCESS(status)) 
 	{
-		DEBUG_PRINT("Failed to create symbolic link (0x%08X)\n", status);
+		DEBUG_PRINT_OBFUSCATE("Failed to create symbolic link ");
+		DEBUG_PRINT("(0x%08X)\n", status);
 		IoDeleteDevice(device_object);
 
 		return status;
@@ -53,7 +56,7 @@ extern "C" NTSTATUS DriverEntry(
 	status = FunctionResolver::resolve_ps_functions(DriverObject);
 	if (!NT_SUCCESS(status))
 	{
-		DEBUG_PRINT("Failed to resolve critical functions!\n");
+		DEBUG_PRINT_OBFUSCATE("Failed to resolve critical functions!\n");
 
 		return status;
 	}
@@ -70,7 +73,7 @@ extern "C" NTSTATUS DriverEntry(
 	NTSTATUS register_result = HandleProtection::register_callback();
 	if (!NT_SUCCESS(register_result))
 	{
-		DEBUG_PRINT("Critical fail registering Handle Protection!\n");
+		DEBUG_PRINT_OBFUSCATE("Critical fail registering Handle Protection!\n");
 
 		return register_result;
 	}
@@ -79,7 +82,7 @@ extern "C" NTSTATUS DriverEntry(
 	UnlinkLoadedModule::remove_from_loaded_modules(PsLoadedModuleList,
 		reinterpret_cast<Address64>(DriverObject->DriverStart));
 
-	DEBUG_PRINT("Driver loaded successfully!\n");
+	DEBUG_PRINT_OBFUSCATE("Driver loaded successfully!\n");
 
 	return STATUS_SUCCESS;
 }
@@ -88,7 +91,7 @@ NTSTATUS primal_create_close(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(DeviceObject);
 
-	DEBUG_PRINT("IRP_MJ_CREATE/IRP_MJ_CLOSE\n");
+	DEBUG_PRINT_OBFUSCATE("IRP_MJ_CREATE/IRP_MJ_CLOSE\n");
 
 	Irp->IoStatus.Status = STATUS_SUCCESS;
 	Irp->IoStatus.Information = 0;
@@ -101,7 +104,7 @@ NTSTATUS primal_control(PDEVICE_OBJECT DeviceObject, PIRP Irp)
 {
 	UNREFERENCED_PARAMETER(DeviceObject);
 
-	DEBUG_PRINT("IRP_MJ_DEVICE_CONTROL\n");
+	DEBUG_PRINT_OBFUSCATE("IRP_MJ_DEVICE_CONTROL\n");
 
 	UNUSED(PIO_STACK_LOCATION irpSp) = IoGetCurrentIrpStackLocation(Irp);
 
@@ -117,10 +120,11 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 {
 	UNREFERENCED_PARAMETER(DriverObject);
 
-	DEBUG_PRINT("DriverUnload\n");
+	DEBUG_PRINT_OBFUSCATE("DriverUnload\n");
 
 	HandleProtection::unregister_callback();
 
+	// TODO: make this obfuscated
 	UNICODE_STRING symbolicLink = RTL_CONSTANT_STRING(L"\\DosDevices\\Primal");
 
 	IoDeleteSymbolicLink(&symbolicLink);
@@ -145,5 +149,5 @@ void find_arcane_pid()
 
 	} while (process != nullptr);
 
-	DEBUG_PRINT("Arcane not found!\n");
+	DEBUG_PRINT_OBFUSCATE("Arcane not found!\n");
 }
