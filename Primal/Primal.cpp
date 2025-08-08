@@ -24,7 +24,7 @@ extern "C" NTSTATUS DriverEntry(
 	UNICODE_STRING symbolic_link = RTL_CONSTANT_STRING(L"\\DosDevices\\Primal");
 	PDEVICE_OBJECT device_object = nullptr;
 
-	NTSTATUS status = IoCreateDevice(DriverObject,
+	NTSTATUS status = RESOLVE(IoCreateDevice)(DriverObject,
 		0,
 		&device_name,
 		FILE_DEVICE_UNKNOWN,
@@ -41,12 +41,12 @@ extern "C" NTSTATUS DriverEntry(
 		return status;
 	}
 
-	status = IoCreateSymbolicLink(&symbolic_link, &device_name);
+	status = RESOLVE(IoCreateSymbolicLink)(&symbolic_link, &device_name);
 	if (!NT_SUCCESS(status)) 
 	{
 		DEBUG_PRINT_OBFUSCATE("Failed to create symbolic link ");
 		DEBUG_PRINT("(0x%08X)\n", status);
-		IoDeleteDevice(device_object);
+		RESOLVE(IoDeleteDevice)(device_object);
 
 		return status;
 	}
