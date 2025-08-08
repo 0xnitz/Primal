@@ -18,6 +18,7 @@ NO_DISCARD NTSTATUS primal_read(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 
 	LOCK();
 
+	// TODO: resolve doesn't work on mapiospace api although they are exported from ntos
 	PVOID mapped_page = MmMapIoSpace(physical_address, size, MmNonCached);
 	if (!mapped_page) {
 		DEBUG_PRINT_OBFUSCATE("Error MmMapIoSpace!\n");

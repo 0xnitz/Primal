@@ -29,27 +29,16 @@
     return status;
 
 #define OBFUSCATE(plaintext) ([]() { \
-    constinit static auto s = ObfuscatedStringA<sizeof(plaintext)>(plaintext); \
+    constinit static auto obfuscated = ObfuscatedStringA<sizeof(plaintext)>(plaintext); \
     \
-    return s.decrypt(); \
+    return obfuscated.decrypt(); \
 })()
 
 #define WOBFUSCATE(plaintext) ([]() { \
-    constinit static auto s = ObfuscatedStringW<sizeof(plaintext)>(L##plaintext); \
+    constinit static auto obfuscated = ObfuscatedStringW<sizeof(plaintext)>(L##plaintext); \
     \
-    return s.decrypt(); \
+    return obfuscated.decrypt(); \
 })()
-
-// Using this so the RESOLVE macro would work, if i'll use a lambda like above^
-// variables won't work correctly because lambdas inside lambdas are fiesty
-//template <size_t string_size>
-//__forceinline PCWSTR wobfuscate_inner(const wchar_t(&plaintext)[string_size]) {
-//    static ObfuscatedStringW<string_size> obfuscated(plaintext);
-//
-//    return obfuscated.decrypt();
-//}
-//
-//#define WOBFUSCATE(plaintext) wobfuscate_inner(L##plaintext)
 
 #define RESOLVE(func_name) [&]() { \
     UNICODE_STRING obfuscated_unicode; \

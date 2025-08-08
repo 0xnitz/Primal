@@ -127,8 +127,8 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 
 	HandleProtection::unregister_callback();
 
-	IoDeleteSymbolicLink(&SYMBOLIC_LINK);
-	IoDeleteDevice(DriverObject->DeviceObject);
+	RESOLVE(IoDeleteSymbolicLink)(&SYMBOLIC_LINK);
+	RESOLVE(IoDeleteDevice)(DriverObject->DeviceObject);
 }
 
 void find_arcane_pid()

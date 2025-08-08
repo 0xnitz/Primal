@@ -17,8 +17,8 @@ CONST UCHAR PsGetNextProcessSignature[] =
 NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
 {
     UNICODE_STRING function_name;
-
-    RtlInitUnicodeString(&function_name, L"PsGetNextProcess");
+    auto ps_get_next_process = WOBFUSCATE("PsGetNextProcess");
+    RtlInitUnicodeString(&function_name, ps_get_next_process);
     const PLDR_DATA_TABLE_ENTRY ntoskrnl_ldr = KernelUtils::get_ntoskrnl_ldr(driver_object);
 
     PsGetNextProcess = static_cast<PSGETNEXTPROCESS>(find_function_in_module(PsGetNextProcessSignature,
@@ -31,7 +31,8 @@ NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
         return STATUS_PROCEDURE_NOT_FOUND;
     }
 
-    RtlInitUnicodeString(&function_name, L"PsGetProcessImageFileName");
+	auto ps_get_process_image_file_name = WOBFUSCATE("PsGetProcessImageFileName");
+    RtlInitUnicodeString(&function_name, ps_get_process_image_file_name);
     PsGetProcessImageFileName = static_cast<PSGETPROCESSIMAGEFILENAME>(MmGetSystemRoutineAddress(&function_name));
     if (!PsGetProcessImageFileName) {
         DEBUG_PRINT_OBFUSCATE("Failed to resolve PsGetProcessImageFileName\n");
