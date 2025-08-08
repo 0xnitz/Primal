@@ -8,8 +8,6 @@
 
 #define UNUSED(var) [[maybe_unused]] var
 
-#define ARCANE_PROCESS_NAME "Arcane.exe"
-
 #define LOCK() \
     KIRQL old_irql; \
     KeAcquireSpinLock(&PRIMAL_LOCK, &old_irql);
@@ -31,27 +29,37 @@
     return status;
 
 #define OBFUSCATE(plaintext) ([]() { \
-    constinit static auto s = ObfuscatedStringA<sizeof(plaintext)>(plaintext); \
+    constinit static auto obfuscated = ObfuscatedStringA<sizeof(plaintext)>(plaintext); \
     \
-    return s.decrypt(); \
+    return obfuscated.decrypt(); \
 })()
 
 #define WOBFUSCATE(plaintext) ([]() { \
-    constinit static auto s = ObfuscatedStringW<sizeof(plaintext)>(plaintext); \
+    constinit static auto obfuscated = ObfuscatedStringW<sizeof(plaintext)>(L##plaintext); \
     \
-    return s.decrypt(); \
+    return obfuscated.decrypt(); \
 })()
+
+#define RESOLVE(func_name) [&]() { \
+    UNICODE_STRING obfuscated_unicode; \
+    RtlInitUnicodeString(&obfuscated_unicode, WOBFUSCATE(#func_name)); \
+    \
+    return reinterpret_cast<decltype(&func_name)>(MmGetSystemRoutineAddress(&obfuscated_unicode)); \
+}()
 
 #ifdef NDEBUG
 #define DEBUG_PRINT(format, ...)
 #else
 // Two macros to support printing DEBUG_PRINT(OBFUSCATE(...)) and variadic
+// TODO: obfuscate primal prefix and dybanically resolve DbgPrint
 #define DEBUG_PRINT(format, ...) \
     DbgPrint("[Primal] " format, __VA_ARGS__)
 
 #define DEBUG_PRINT_OBFUSCATE(str) \
     DbgPrint("%s %s", OBFUSCATE("[Primal]"), OBFUSCATE(str));
 #endif
+
+#define ARCANE_PROCESS_NAME OBFUSCATE("Arcane.exe")
 
 extern KSPIN_LOCK PRIMAL_LOCK;
 

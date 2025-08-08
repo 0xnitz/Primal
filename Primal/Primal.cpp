@@ -9,6 +9,8 @@ PEPROCESS ARCANE_PROCESS = nullptr;
 PSGETNEXTPROCESS PsGetNextProcess = nullptr;
 PSGETPROCESSIMAGEFILENAME PsGetProcessImageFileName = nullptr;
 KSPIN_LOCK PRIMAL_LOCK;
+UNICODE_STRING DEVICE_NAME;
+UNICODE_STRING SYMBOLIC_LINK;
 
 extern "C" NTSTATUS DriverEntry(
 	_In_ PDRIVER_OBJECT     DriverObject,
@@ -19,14 +21,15 @@ extern "C" NTSTATUS DriverEntry(
 	
 	DEBUG_PRINT_OBFUSCATE("In DriverEntry\n");
 
-	// TODO: obfuscate these in a nice way
-	UNICODE_STRING device_name = RTL_CONSTANT_STRING(L"\\Device\\Primal");
-	UNICODE_STRING symbolic_link = RTL_CONSTANT_STRING(L"\\DosDevices\\Primal");
+	auto device_name_obfuscated = WOBFUSCATE("\\Device\\Primal");
+	RtlInitUnicodeString(&DEVICE_NAME, device_name_obfuscated);
+	auto symbolic_link_obfuscated = WOBFUSCATE("\\DosDevices\\Primal");
+	RtlInitUnicodeString(&SYMBOLIC_LINK, symbolic_link_obfuscated);
 	PDEVICE_OBJECT device_object = nullptr;
 
-	NTSTATUS status = IoCreateDevice(DriverObject,
+	NTSTATUS status = RESOLVE(IoCreateDevice)(DriverObject,
 		0,
-		&device_name,
+		&DEVICE_NAME,
 		FILE_DEVICE_UNKNOWN,
 		0,
 		FALSE,
@@ -41,12 +44,12 @@ extern "C" NTSTATUS DriverEntry(
 		return status;
 	}
 
-	status = IoCreateSymbolicLink(&symbolic_link, &device_name);
+	status = RESOLVE(IoCreateSymbolicLink)(&SYMBOLIC_LINK, &DEVICE_NAME);
 	if (!NT_SUCCESS(status)) 
 	{
 		DEBUG_PRINT_OBFUSCATE("Failed to create symbolic link ");
 		DEBUG_PRINT("(0x%08X)\n", status);
-		IoDeleteDevice(device_object);
+		RESOLVE(IoDeleteDevice)(device_object);
 
 		return status;
 	}
@@ -124,21 +127,19 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 
 	HandleProtection::unregister_callback();
 
-	// TODO: make this obfuscated
-	UNICODE_STRING symbolicLink = RTL_CONSTANT_STRING(L"\\DosDevices\\Primal");
-
-	IoDeleteSymbolicLink(&symbolicLink);
-	IoDeleteDevice(DriverObject->DeviceObject);
+	RESOLVE(IoDeleteSymbolicLink)(&SYMBOLIC_LINK);
+	RESOLVE(IoDeleteDevice)(DriverObject->DeviceObject);
 }
 
 void find_arcane_pid()
 {
 	PEPROCESS process = PsInitialSystemProcess;
+	const char* arcane_name = ARCANE_PROCESS_NAME;
 
 	do {
 		const char* image_file_name = PsGetProcessImageFileName(process);
 
-		if (image_file_name && _stricmp(image_file_name, ARCANE_PROCESS_NAME) == 0) {
+		if (image_file_name && _stricmp(image_file_name, arcane_name) == 0) {
 			ARCANE_PID = PsGetProcessId(process);
 			ARCANE_PROCESS = process;
 

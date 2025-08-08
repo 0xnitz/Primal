@@ -4,4 +4,4 @@
 	* load reflective driver
 	* flip the order, uefi runtime -> primal -> arcane
 	* change boot logo
-* add kernel api resolver
+* start smm work

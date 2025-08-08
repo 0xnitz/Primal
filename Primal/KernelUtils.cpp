@@ -7,7 +7,9 @@ PLDR_DATA_TABLE_ENTRY get_ntoskrnl_ldr(IN PDRIVER_OBJECT DriverObject)
 {
 	auto current_entry = static_cast<PLDR_DATA_TABLE_ENTRY>(DriverObject->DriverSection);
 	const PLDR_DATA_TABLE_ENTRY first_entry = current_entry;
-	constexpr UNICODE_STRING ntoskrnl_name = RTL_CONSTANT_STRING(L"ntoskrnl.exe");
+	auto ntos_name = WOBFUSCATE("ntoskrnl.exe");
+	UNICODE_STRING ntoskrnl_name;
+	RtlInitUnicodeString(&ntoskrnl_name, ntos_name);
 
 	while (reinterpret_cast<PLDR_DATA_TABLE_ENTRY>(current_entry->InLoadOrderLinks.Flink) != first_entry)
 	{

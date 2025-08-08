@@ -47,7 +47,7 @@ NTSTATUS HandleProtection::register_callback()
 	callback.OperationRegistration = OPERATION_REGISTRATION;
 	callback.RegistrationContext = nullptr;
 
-	NTSTATUS out_status = ObRegisterCallbacks(&callback, reinterpret_cast<PVOID*>(&CALLBACK_REGISTRATION));
+	NTSTATUS out_status = RESOLVE(ObRegisterCallbacks)(&callback, reinterpret_cast<PVOID*>(&CALLBACK_REGISTRATION));
 	if (!NT_SUCCESS(out_status)) {
 		DEBUG_PRINT_OBFUSCATE("Failed to register Ob callback: ");
 		DEBUG_PRINT("0x%X!\n", out_status);
@@ -63,7 +63,7 @@ NTSTATUS HandleProtection::register_callback()
 void HandleProtection::unregister_callback()
 {
 	if (CALLBACK_REGISTRATION) {
-		ObUnRegisterCallbacks(CALLBACK_REGISTRATION);
+		RESOLVE(ObUnRegisterCallbacks)(CALLBACK_REGISTRATION);
 
 		CALLBACK_REGISTRATION = nullptr;
 	}
