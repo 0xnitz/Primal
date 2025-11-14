@@ -1,4 +1,5 @@
 #include "Primal.hpp"
+#include "FileCallbacks.hpp"
 #include "DetachEprocess.hpp"
 #include "FunctionResolver.hpp"
 #include "HandleProtection.hpp"
@@ -8,6 +9,11 @@ HANDLE ARCANE_PID = reinterpret_cast<HANDLE>(-1);
 PEPROCESS ARCANE_PROCESS = nullptr;
 PSGETNEXTPROCESS PsGetNextProcess = nullptr;
 PSGETPROCESSIMAGEFILENAME PsGetProcessImageFileName = nullptr;
+PSLOOKUPPROCESSBYPROCESSID PsLookupProcessByProcessId = nullptr;
+KESTACKATTACHPROCESS KeStackAttachProcess = nullptr;
+KEUNSTACKDETACHPROCESS KeUnstackDetachProcess = nullptr;
+ZWALLOCATEVIRTUALMEMORY ZwAllocateVirtualMemory = nullptr;
+PSGETPROCESSPEB PsGetProcessPeb = nullptr;
 KSPIN_LOCK PRIMAL_LOCK;
 UNICODE_STRING DEVICE_NAME;
 UNICODE_STRING SYMBOLIC_LINK;
@@ -35,7 +41,7 @@ extern "C" NTSTATUS DriverEntry(
 		FALSE,
 		&device_object
 	);
-
+	
 	if (!NT_SUCCESS(status)) 
 	{
 		DEBUG_PRINT_OBFUSCATE("Failed to create device ");
@@ -80,10 +86,17 @@ extern "C" NTSTATUS DriverEntry(
 
 		return register_result;
 	}
+	DEBUG_PRINT_OBFUSCATE("Registered Handle Protection callback\n");
 
 	DetachEprocess::remove_from_process_links(ARCANE_PROCESS);
+	DEBUG_PRINT_OBFUSCATE("Detached Arcane.exe from the PsActiveProcessHead!\n");
+
 	UnlinkLoadedModule::remove_from_loaded_modules(PsLoadedModuleList,
 		reinterpret_cast<Address64>(DriverObject->DriverStart));
+	DEBUG_PRINT_OBFUSCATE("Detached Primal from PsLoadedModuleList!\n");
+
+	FileCallbacks::set_load_image_notify_routine();
+	DEBUG_PRINT_OBFUSCATE("Set up hooking process for the target process\n");
 
 	DEBUG_PRINT_OBFUSCATE("Driver loaded successfully!\n");
 
@@ -126,6 +139,7 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 	DEBUG_PRINT_OBFUSCATE("DriverUnload\n");
 
 	HandleProtection::unregister_callback();
+	FileCallbacks::remove_load_image_notify_routine();
 
 	RESOLVE(IoDeleteSymbolicLink)(&SYMBOLIC_LINK);
 	RESOLVE(IoDeleteDevice)(DriverObject->DeviceObject);

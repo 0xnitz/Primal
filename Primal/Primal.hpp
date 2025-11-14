@@ -2,8 +2,8 @@
 
 // TODO: add nice error codes
 
-#include "DefinesMacros.hpp"
 #include "Memory.hpp"
+#include "DefinesMacros.hpp"
 
 NO_DISCARD NTSTATUS primal_create_close(PDEVICE_OBJECT DeviceObject, PIRP Irp);
 

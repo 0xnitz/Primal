@@ -24,4 +24,28 @@ PLDR_DATA_TABLE_ENTRY get_ntoskrnl_ldr(IN PDRIVER_OBJECT DriverObject)
 	return nullptr;
 }
 
+PEPROCESS get_process_of_pid(HANDLE pid)
+{
+	PEPROCESS process = nullptr;
+	if (NT_SUCCESS(PsLookupProcessByProcessId(pid, &process)) && process)
+	{
+		return process;
+	}
+
+	return nullptr;
+}
+
+PPEB get_peb_of_process(PEPROCESS process)
+{
+	KAPC_STATE state;
+	PRKPROCESS kprocess = reinterpret_cast<PRKPROCESS>(process);
+	KeStackAttachProcess(kprocess, &state);
+
+	PPEB peb = PsGetProcessPeb(process);
+
+	KeUnstackDetachProcess(&state);
+
+	return peb;
+}
+
 }

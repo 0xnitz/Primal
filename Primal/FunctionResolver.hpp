@@ -4,6 +4,11 @@
 
 extern PSGETNEXTPROCESS PsGetNextProcess;
 extern PSGETPROCESSIMAGEFILENAME PsGetProcessImageFileName;
+extern PSLOOKUPPROCESSBYPROCESSID PsLookupProcessByProcessId;
+extern KESTACKATTACHPROCESS KeStackAttachProcess;
+extern KEUNSTACKDETACHPROCESS KeUnstackDetachProcess;
+extern ZWALLOCATEVIRTUALMEMORY ZwAllocateVirtualMemory;
+extern PSGETPROCESSPEB PsGetProcessPeb;
 
 namespace FunctionResolver
 {

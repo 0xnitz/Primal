@@ -40,6 +40,51 @@ NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
         return STATUS_PROCEDURE_NOT_FOUND;
     }
 
+	auto ps_lookup_process_by_process_id = WOBFUSCATE("PsLookupProcessByProcessId");
+	RtlInitUnicodeString(&function_name, ps_lookup_process_by_process_id);
+	PsLookupProcessByProcessId = static_cast<PSLOOKUPPROCESSBYPROCESSID>(MmGetSystemRoutineAddress(&function_name));
+    if (!PsLookupProcessByProcessId) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve PsLookupProcessByProcessId\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
+    auto ke_stack_attach_process = WOBFUSCATE("KeStackAttachProcess");
+    RtlInitUnicodeString(&function_name, ke_stack_attach_process);
+    KeStackAttachProcess = static_cast<KESTACKATTACHPROCESS>(MmGetSystemRoutineAddress(&function_name));
+    if (!KeStackAttachProcess) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve KeStackAttachProcess\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
+    auto ke_unstack_detach_process = WOBFUSCATE("KeUnstackDetachProcess");
+    RtlInitUnicodeString(&function_name, ke_unstack_detach_process);
+    KeUnstackDetachProcess = static_cast<KEUNSTACKDETACHPROCESS>(MmGetSystemRoutineAddress(&function_name));
+    if (!KeUnstackDetachProcess) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve KeUnstackDetachProcess\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
+    auto zw_allocate_virtual_memory = WOBFUSCATE("ZwAllocateVirtualMemory");
+    RtlInitUnicodeString(&function_name, zw_allocate_virtual_memory);
+    ZwAllocateVirtualMemory = static_cast<ZWALLOCATEVIRTUALMEMORY>(MmGetSystemRoutineAddress(&function_name));
+    if (!ZwAllocateVirtualMemory) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve ZwAllocateVirtualMemory\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
+    auto ps_get_process_peb = WOBFUSCATE("PsGetProcessPeb");
+    RtlInitUnicodeString(&function_name, ps_get_process_peb);
+    PsGetProcessPeb = static_cast<PSGETPROCESSPEB>(MmGetSystemRoutineAddress(&function_name));
+    if (!PsGetProcessPeb) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve PsGetProcessPeb\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
     return STATUS_SUCCESS;
 }
 

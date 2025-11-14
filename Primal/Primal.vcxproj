@@ -133,6 +133,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DetachEprocess.cpp" />
+    <ClCompile Include="FileCallbacks.cpp" />
     <ClCompile Include="FunctionResolver.cpp" />
     <ClCompile Include="HandleProtection.cpp" />
     <ClCompile Include="KernelUtils.cpp" />
@@ -143,12 +144,14 @@
   <ItemGroup>
     <ClInclude Include="DefinesMacros.hpp" />
     <ClInclude Include="DetachEprocess.hpp" />
+    <ClInclude Include="FileCallbacks.hpp" />
     <ClInclude Include="FunctionResolver.hpp" />
     <ClInclude Include="HandleProtection.hpp" />
     <ClInclude Include="KernelUtils.hpp" />
     <ClInclude Include="Memory.hpp" />
     <ClInclude Include="Obfuscation.hpp" />
     <ClInclude Include="Primal.hpp" />
+    <ClInclude Include="Structs.hpp" />
     <ClInclude Include="UnlinkLoadedModule.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
