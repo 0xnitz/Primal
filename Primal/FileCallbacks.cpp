@@ -169,6 +169,15 @@ NTSTATUS hook_iat_of_module(HANDLE pid, Address64 module_base, const char* funct
 				Address64 original = *reinterpret_cast<Address64*>(iat_entry_va);
 				DEBUG_PRINT_OBFUSCATE("Found IAT entry, hooking...\n");
 
+				NTSTATUS protect_status = Memory::primal_protect_virtual(pid, iat_entry_va, sizeof(Address64), PAGE_READWRITE, nullptr);
+				if (protect_status != STATUS_SUCCESS)
+				{
+					DEBUG_PRINT_OBFUSCATE("Failed to change IAT entry protection!\n");
+					KeUnstackDetachProcess(&state);
+
+					return protect_status;
+				}
+
 				NTSTATUS write_status = Memory::primal_write_virtual(pid, iat_entry_va, &hook_function, sizeof(Address64));
 				if (write_status != STATUS_SUCCESS)
 				{

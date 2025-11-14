@@ -9,6 +9,7 @@ extern KESTACKATTACHPROCESS KeStackAttachProcess;
 extern KEUNSTACKDETACHPROCESS KeUnstackDetachProcess;
 extern ZWALLOCATEVIRTUALMEMORY ZwAllocateVirtualMemory;
 extern PSGETPROCESSPEB PsGetProcessPeb;
+extern ZWPROTECTVIRTUALMEMORY ZwProtectVirtualMemory;
 
 namespace FunctionResolver
 {

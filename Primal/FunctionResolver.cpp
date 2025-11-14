@@ -85,6 +85,15 @@ NTSTATUS resolve_ps_functions(PDRIVER_OBJECT driver_object)
         return STATUS_PROCEDURE_NOT_FOUND;
     }
 
+    auto zw_protect_virtual_memory = WOBFUSCATE("ZwProtectVirtualMemory");
+    RtlInitUnicodeString(&function_name, zw_protect_virtual_memory);
+    ZwProtectVirtualMemory = static_cast<ZWPROTECTVIRTUALMEMORY>(MmGetSystemRoutineAddress(&function_name));
+    if (!ZwProtectVirtualMemory) {
+        DEBUG_PRINT_OBFUSCATE("Failed to resolve ZwProtectVirtualMemory\n");
+
+        return STATUS_PROCEDURE_NOT_FOUND;
+    }
+
     return STATUS_SUCCESS;
 }
 

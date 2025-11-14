@@ -161,4 +161,24 @@ NO_DISCARD Address64 primal_allocate_virtual(HANDLE pid, size_t size, ULONG allo
 	return allocated_memory;
 }
 
+NO_DISCARD NTSTATUS primal_protect_virtual(HANDLE pid, Address64 address, size_t size, ULONG new_protect, PULONG old_protect)
+{
+	KAPC_STATE state;
+	PRKPROCESS process = reinterpret_cast<PRKPROCESS>(KernelUtils::get_process_of_pid(pid));
+	KeStackAttachProcess(process, &state);
+
+	NTSTATUS status = ZwProtectVirtualMemory(NtCurrentProcess(), reinterpret_cast<PVOID*>(&address), &size, new_protect, old_protect);
+	if (!NT_SUCCESS(status))
+	{
+		DEBUG_PRINT_OBFUSCATE("Failed to protect virtual memory!\n");
+		KeUnstackDetachProcess(&state);
+
+		return status;
+	}
+
+	KeUnstackDetachProcess(&state);
+
+	return STATUS_SUCCESS;
+}
+
 }
