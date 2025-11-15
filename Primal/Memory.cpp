@@ -1,4 +1,5 @@
 #include "Memory.hpp"
+#include "KernelUtils.hpp"
 
 namespace Memory
 {
@@ -40,7 +41,7 @@ NO_DISCARD NTSTATUS primal_read(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	MmUnmapIoSpace(mapped_page, size);
 
 	DEBUG_PRINT_OBFUSCATE("Mapping address ");
-	DEBUG_PRINT("(0x%08X) to (0x%08X)", physical_address, user_buffer);
+	DEBUG_PRINT("(0x%08X) to (0x%08X)\n", physical_address, user_buffer);
 
 	COMPLETE_REQUEST_UNLOCK(Irp, STATUS_SUCCESS)
 }
@@ -83,6 +84,101 @@ NO_DISCARD NTSTATUS primal_write(UNUSED(PDEVICE_OBJECT DeviceObject), PIRP Irp)
 	DEBUG_PRINT("(0x%08X)", physical_address);
 
 	COMPLETE_REQUEST_UNLOCK(Irp, STATUS_SUCCESS)
+}
+
+NO_DISCARD NTSTATUS primal_read_virtual(HANDLE pid, Address64 address, void* buffer, size_t size)  
+{
+	KAPC_STATE state;
+	SIZE_T bytes_copied = 0;
+	MM_COPY_ADDRESS source_address;
+	source_address.VirtualAddress = reinterpret_cast<PVOID>(address);
+
+	PRKPROCESS process = reinterpret_cast<PRKPROCESS>(KernelUtils::get_process_of_pid(pid));
+	KeStackAttachProcess(process, &state);
+
+	NTSTATUS status = MmCopyMemory(buffer, source_address, size, MM_COPY_MEMORY_VIRTUAL, &bytes_copied);
+	if (!NT_SUCCESS(status))
+	{
+		DEBUG_PRINT_OBFUSCATE("Failed to read virtual memory!\n");
+		KeUnstackDetachProcess(&state);
+
+		return status;
+	}
+
+	KeUnstackDetachProcess(&state);
+	DEBUG_PRINT_OBFUSCATE("Read virtual memory successfully!\n");
+
+	return STATUS_SUCCESS;
+}
+
+NO_DISCARD NTSTATUS primal_write_virtual(HANDLE pid, Address64 address, void* buffer, size_t size)
+{
+	KAPC_STATE state;
+	PRKPROCESS process = reinterpret_cast<PRKPROCESS>(KernelUtils::get_process_of_pid(pid));
+	KeStackAttachProcess(process, &state);
+	size_t copied = 0;
+
+	NTSTATUS copy_status = MmCopyVirtualMemory(
+		PsGetCurrentProcess(),
+		reinterpret_cast<PVOID>(buffer),
+		reinterpret_cast<PEPROCESS>(process),
+		reinterpret_cast<PVOID>(address),
+		size,
+		KernelMode,
+		&copied);
+
+	if (!NT_SUCCESS(copy_status) || copied != size)
+	{
+		DEBUG_PRINT_OBFUSCATE("Failed to write virtual memory!\n");
+		KeUnstackDetachProcess(&state);
+
+		return STATUS_ACCESS_VIOLATION;
+	}
+
+	KeUnstackDetachProcess(&state);
+
+	return STATUS_SUCCESS;
+}
+
+NO_DISCARD Address64 primal_allocate_virtual(HANDLE pid, size_t size, ULONG allocation_type, ULONG protect)
+{
+	KAPC_STATE state;
+	Address64 allocated_memory = 0;
+	PRKPROCESS process = reinterpret_cast<PRKPROCESS>(KernelUtils::get_process_of_pid(pid));
+	KeStackAttachProcess(process, &state);
+	
+	NTSTATUS status = ZwAllocateVirtualMemory(NtCurrentProcess(), reinterpret_cast<PVOID*>(&allocated_memory), 0, &size, allocation_type, protect);
+	if (!NT_SUCCESS(status))
+	{
+		DEBUG_PRINT_OBFUSCATE("Failed to allocate virtual memory!\n");
+		KeUnstackDetachProcess(&state);
+
+		return 0;
+	}
+
+	KeUnstackDetachProcess(&state);
+
+	return allocated_memory;
+}
+
+NO_DISCARD NTSTATUS primal_protect_virtual(HANDLE pid, Address64 address, size_t size, ULONG new_protect, PULONG old_protect)
+{
+	KAPC_STATE state;
+	PRKPROCESS process = reinterpret_cast<PRKPROCESS>(KernelUtils::get_process_of_pid(pid));
+	KeStackAttachProcess(process, &state);
+
+	NTSTATUS status = ZwProtectVirtualMemory(NtCurrentProcess(), reinterpret_cast<PVOID*>(&address), &size, new_protect, old_protect);
+	if (!NT_SUCCESS(status))
+	{
+		DEBUG_PRINT_OBFUSCATE("Failed to protect virtual memory!\n");
+		KeUnstackDetachProcess(&state);
+
+		return status;
+	}
+
+	KeUnstackDetachProcess(&state);
+
+	return STATUS_SUCCESS;
 }
 
 }
