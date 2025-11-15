@@ -9,7 +9,7 @@ namespace FileCallbacks
 
 Address64 ORIGINAL_FUNCTION_ADDRESS = 0;
 Address64 ORIGINAL_FUNCTION = 0;
-HANDLE NOTEPAD_PID = 0;
+HANDLE TARGET_PID = 0;
 Address64 FAKE_FILE_MAPPING = 0;
 
 void load_image_notify_routine(PUNICODE_STRING FullImageName, HANDLE ProcessId, PIMAGE_INFO ImageInfo)
@@ -17,13 +17,12 @@ void load_image_notify_routine(PUNICODE_STRING FullImageName, HANDLE ProcessId, 
 	PEPROCESS process = KernelUtils::get_process_of_pid(ProcessId);
 	const char* image_file_name = PsGetProcessImageFileName(process);
 
-	if (_stricmp(image_file_name, OBFUSCATE("Notepad.exe")) == 0 && FullImageName && ImageInfo && ImageInfo->ImageBase)
+	if (_stricmp(image_file_name, OBFUSCATE("target.exe")) == 0 && FullImageName && ImageInfo && ImageInfo->ImageBase)
 	{
-		if (wcsstr(FullImageName->Buffer, L"ntdll.dll") || wcsstr(FullImageName->Buffer, WOBFUSCATE("NTDLL.DLL")))
+		// If kernel32.dll is loaded, the image + ntdll are fully resolved in memory
+		if (wcsstr(FullImageName->Buffer, L"kernel32.dll") || wcsstr(FullImageName->Buffer, WOBFUSCATE("KERNEL32.DLL")))
 		{
-			DEBUG_PRINT_OBFUSCATE("Notepad.exe ntdll loaded, hooking IAT of image\n");
-			DEBUG_PRINT_OBFUSCATE("Allocating fake file mapping\n");
-			allocate_fake_file_mapping(ProcessId);
+			DEBUG_PRINT_OBFUSCATE("target.exe's kernel32.dll loaded, hooking IAT of image\n");
 
 			Address64 shellcode_address = Memory::primal_allocate_virtual(ProcessId, PAGE_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 			if (!shellcode_address)
@@ -33,7 +32,6 @@ void load_image_notify_routine(PUNICODE_STRING FullImageName, HANDLE ProcessId, 
 				return;
 			}
 
-			DEBUG_PRINT_OBFUSCATE("allocated memory\n");
 			NTSTATUS write_status = Memory::primal_write_virtual(
 				ProcessId,
 				shellcode_address,
@@ -46,28 +44,26 @@ void load_image_notify_routine(PUNICODE_STRING FullImageName, HANDLE ProcessId, 
 				return;
 			}
 
-			DEBUG_PRINT_OBFUSCATE("write memory success\n");
-			NOTEPAD_PID = ProcessId;
+			TARGET_PID = ProcessId;
 			PPEB peb = KernelUtils::get_peb_of_process(process);
 			if (!peb)
 			{
-				DEBUG_PRINT_OBFUSCATE("Failed to get PEB of Notepad.exe!\n");
+				DEBUG_PRINT_OBFUSCATE("Failed to get PEB of target!\n");
 
 				return;
 			}
 			Address64 notepad_base_address = *reinterpret_cast<Address64*>((reinterpret_cast<Address64>(peb) + 0x10));
 			
-			DEBUG_PRINT_OBFUSCATE("peb success\n");
 			NTSTATUS hook_iat = hook_iat_of_module(
 				ProcessId,
 				notepad_base_address,
-				OBFUSCATE("MapViewOfFile"),
+				OBFUSCATE("ReadFile"),
 				reinterpret_cast<void*>(shellcode_address),
 				reinterpret_cast<void**>(&ORIGINAL_FUNCTION_ADDRESS),
 				reinterpret_cast<void**>(&ORIGINAL_FUNCTION));
 			if (hook_iat != STATUS_SUCCESS)
 			{
-				DEBUG_PRINT_OBFUSCATE("Failed to hook IAT of Notepad.exe!\n");
+				DEBUG_PRINT_OBFUSCATE("Failed to hook IAT of target!\n");
 
 				return;
 			}
@@ -86,7 +82,14 @@ void remove_load_image_notify_routine()
 {
 	PsRemoveLoadImageNotifyRoutine(load_image_notify_routine);
 
-	NTSTATUS status = Memory::primal_write_virtual(NOTEPAD_PID, ORIGINAL_FUNCTION, &ORIGINAL_FUNCTION_ADDRESS, sizeof(Address64));
+	if (!TARGET_PID || !ORIGINAL_FUNCTION_ADDRESS)
+	{
+		DEBUG_PRINT_OBFUSCATE("Unhooked IAT successfully!\n");
+
+		return;
+	}
+
+	NTSTATUS status = Memory::primal_write_virtual(TARGET_PID, ORIGINAL_FUNCTION, &ORIGINAL_FUNCTION_ADDRESS, sizeof(Address64));
 	if (status != STATUS_SUCCESS)
 	{
 		DEBUG_PRINT_OBFUSCATE("Failed to unhook IAT!\n");
@@ -233,19 +236,20 @@ Address64 map_view_of_file_hook(UNUSED(HANDLE hFileMappingObject), UNUSED(DWORD3
 		return NULL;
 	}
 
-	return FAKE_FILE_MAPPING;
+	// TODO: Need to copy the pointer to usermode to actually return it
+	//return FAKE_FILE_MAPPING;
+
+	return NULL;
 }
 
 int read_file_hook(UNUSED(HANDLE hFile), UNUSED(Address64 lpBuffer), UNUSED(DWORD32 nNumberOfBytesToRead), UNUSED(DWORD32* lpNumberOfBytesRead), UNUSED(LPOVERLAPPED lpOverlapped))
 {
-	// Check if the file name is the target file, if so, return zero, else call the original function.
-
 	if (nNumberOfBytesToRead == 0x1337)
 	{
 		*reinterpret_cast<char**>(lpBuffer)[0] = 'N';
 	}
 
-	return STATUS_SUCCESS;
+	return true;
 }
 
 }

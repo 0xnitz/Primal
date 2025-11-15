@@ -144,6 +144,8 @@ _Use_decl_annotations_ VOID primal_unload(PDRIVER_OBJECT DriverObject)
 
 	RESOLVE(IoDeleteSymbolicLink)(&SYMBOLIC_LINK);
 	RESOLVE(IoDeleteDevice)(DriverObject->DeviceObject);
+
+	DEBUG_PRINT_OBFUSCATE("Driver unloaded successfully\n");
 }
 
 void find_arcane_pid()
